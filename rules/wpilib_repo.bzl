@@ -108,20 +108,20 @@ ALL_PLATFORMS = [
     "@wpi_bazel_rules//toolchains/conditions:roborio",
 ]
 
+PLATFORM_LOOKUP = {
+    "@bazel_tools//src/conditions:windows": "windowsx86-64",
+    "@bazel_tools//src/conditions:linux_x86_64": "linuxx86-64",
+    "@bazel_tools//src/conditions:darwin": "osxx86-64",
+    "@wpi_bazel_rules//toolchains/conditions:raspbian": "linuxraspbian",
+    "@wpi_bazel_rules//toolchains/conditions:bionic": "linuxaarch64bionic",
+    "@wpi_bazel_rules//toolchains/conditions:roborio": "linuxathena",
+}
+
 def make_cpp_alias(name, supported_platforms = ALL_PLATFORMS):
     lib_name = name
 
-    LOOKUP = {
-        "@bazel_tools//src/conditions:windows": "windowsx86-64",
-        "@bazel_tools//src/conditions:linux_x86_64": "linuxx86-64",
-        "@bazel_tools//src/conditions:darwin": "osxx86-64",
-        "@wpi_bazel_rules//toolchains/conditions:raspbian": "linuxraspbian",
-        "@wpi_bazel_rules//toolchains/conditions:bionic": "linuxaarch64bionic",
-        "@wpi_bazel_rules//toolchains/conditions:roborio": "linuxathena",
-    }
-
-    lib_select = {key: "@" + lib_name + "-" + LOOKUP[key] + "-libs//:libs" for key in supported_platforms}
-    shared_lib_select = {key: "@" + lib_name + "-" + LOOKUP[key] + "-libs//:shared_libs" for key in supported_platforms}
+    lib_select = {key: "@" + lib_name + "-" + PLATFORM_LOOKUP[key] + "-libs//:libs" for key in supported_platforms}
+    shared_lib_select = {key: "@" + lib_name + "-" + PLATFORM_LOOKUP[key] + "-libs//:shared_libs" for key in supported_platforms}
 
     native.alias(
         name = lib_name + "-libs",
@@ -135,15 +135,12 @@ def make_cpp_alias(name, supported_platforms = ALL_PLATFORMS):
         visibility = ["//visibility:public"],
     )
 
-def make_jni_alias(name):
+def make_jni_alias(name, supported_platforms = ALL_PLATFORMS):
     lib_name = name
 
+    lib_select = {key: "@" + lib_name + "-" + PLATFORM_LOOKUP[key] + "-jni-lib//:shared_libs" for key in supported_platforms}
     native.alias(
         name = lib_name + "-jni-lib",
-        actual = select({
-            "@bazel_tools//src/conditions:windows": "@" + lib_name + "-windowsx86-64-jni-lib//:shared_libs",
-            "@bazel_tools//src/conditions:linux_x86_64": "@" + lib_name + "-linuxx86-64-jni-lib//:shared_libs",
-            "@bazel_tools//src/conditions:darwin": "@" + lib_name + "-osxx86-64-jni-lib//:shared_libs",
-        }),
+        actual = select(lib_select),
         visibility = ["//visibility:public"],
     )
