@@ -1,3 +1,5 @@
+load("@rules_python//python:defs.bzl", "py_binary")
+
 py_binary(
     name = "create_combined_runtime",
     srcs = ["create_combined_runtime.py"],

@@ -1,3 +1,5 @@
+load("@rules_cc//cc:defs.bzl", "objc_library")
+
 OBJC_COMPILER_FLAGS = [
     "-std=c++17",
     "-stdlib=libc++",
@@ -12,7 +14,7 @@ def wpilib_objc_library(
         deps = [],
         copts = [],
         **kwargs):
-    native.objc_library(
+    objc_library(
         name = name,
         srcs = srcs,
         copts = copts + OBJC_COMPILER_FLAGS,

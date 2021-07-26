@@ -8,7 +8,7 @@ def _copy_filegroup_impl(ctx):
     all_outputs = []
     for f in all_input_files:
         out = ctx.actions.declare_file(ctx.attr.output_directory + "/" + f.basename)
-        all_outputs += [out]
+        all_outputs.append(out)
         ctx.actions.run_shell(
             outputs = [out],
             inputs = depset([f]),

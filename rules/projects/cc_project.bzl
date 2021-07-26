@@ -7,10 +7,9 @@ def cc_project(
         test_libraries = [],
         wpi_shared_deps = [],
         test_linkopts = [],
+        tags = [],
         build_as_shared = False,
         has_test = True):
-
-
     if build_as_shared:
         test_raw_deps = test_libraries
         test_wpi_shared_deps = [":" + name]
@@ -20,6 +19,7 @@ def cc_project(
             additional_srcs = additional_srcs,
             raw_deps = raw_deps,
             wpi_shared_deps = wpi_shared_deps,
+            tags = tags,
             visibility = ["//visibility:public"],
         )
     else:
@@ -30,6 +30,7 @@ def cc_project(
             name = name,
             additional_srcs = additional_srcs,
             raw_deps = raw_deps,
+            tags = tags,
             wpi_shared_deps = wpi_shared_deps,
             visibility = ["//visibility:public"],
         )
@@ -38,6 +39,7 @@ def cc_project(
         default_wpilib_cc_test(
             name = name + "-test",
             raw_deps = test_raw_deps,
+            tags = tags,
             wpi_shared_deps = test_wpi_shared_deps,
             linkopts = test_linkopts,
         )
@@ -47,4 +49,5 @@ def cc_project(
         raw_deps = test_raw_deps,
         wpi_shared_deps = test_wpi_shared_deps,
         linkopts = test_linkopts,
+        tags = tags,
     )

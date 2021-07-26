@@ -15,7 +15,7 @@ def __prep_halsim_environment(halsim_deps):
 
     return target_basenames, actual_targets
 
-def wpilib_java_halsim_binary(name, halsim_deps = [], wpi_shared_deps = [], **kwargs):
+def wpilib_java_halsim_binary(name, tags = [], halsim_deps = [], wpi_shared_deps = [], **kwargs):
     env_dict = None
 
     target_basenames, _ = __prep_halsim_environment(halsim_deps)
@@ -34,6 +34,7 @@ def wpilib_java_halsim_binary(name, halsim_deps = [], wpi_shared_deps = [], **kw
         name = name,
         env_dict = env_dict,
         wpi_shared_deps = wpi_shared_deps + halsim_deps,
+        tags = tags + ["no-roborio", "no-bionic", "no-raspbian"],
         **kwargs
     )
 
@@ -41,6 +42,7 @@ def wpilib_cc_halsim_binary(
         name,
         halsim_deps = [],
         data = [],
+        tags = [],
         **kwargs):
     env = {}
 
@@ -56,6 +58,7 @@ def wpilib_cc_halsim_binary(
                 "@bazel_tools//src/conditions:linux_x86_64": ".",
                 "@bazel_tools//src/conditions:darwin": ".",
             }),
+            tags = tags + ["no-roborio", "no-bionic", "no-raspbian"],
         )
         copied_halsim_dep_target = [":" + name + "_copy_halsim"]
 
@@ -70,7 +73,15 @@ def wpilib_cc_halsim_binary(
 
     wpilib_cc_binary(
         name = name,
-        data = data + copied_halsim_dep_target,
+        data = data + select({
+            "@bazel_tools//src/conditions:windows": copied_halsim_dep_target,
+            "@bazel_tools//src/conditions:linux_x86_64": copied_halsim_dep_target,
+            "@bazel_tools//src/conditions:darwin": copied_halsim_dep_target,
+            "@wpi_bazel_rules//toolchains/conditions:raspbian": [],
+            "@wpi_bazel_rules//toolchains/conditions:bionic": [],
+            "@wpi_bazel_rules//toolchains/conditions:roborio": [],
+        }),
         env = env,
+        tags = tags + ["no-roborio", "no-bionic", "no-raspbian"],
         **kwargs
     )

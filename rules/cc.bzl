@@ -54,6 +54,11 @@ def _get_default_cxx_opts():
         "@bazel_tools//src/conditions:windows": WINDOWS_COMPILER_ARGS + WINDOWS_WARNING_ARGS + WINDOWS_WARNINGS_AS_ERROR_ARGS,
         "@bazel_tools//src/conditions:linux_x86_64": LINUX_COMPILER_ARGS + UNIX_WARNING_ARGS + UNIX_WARNINGS_AS_ERROR_ARGS,
         "@bazel_tools//src/conditions:darwin": MAC_COMPILER_ARGS,  #  + UNIX_WARNING_ARGS + UNIX_WARNINGS_AS_ERROR_ARGS,
+
+        # Arguments handled by hermetic toolchain
+        "@wpi_bazel_rules//toolchains/conditions:roborio": [],
+        "@wpi_bazel_rules//toolchains/conditions:bionic": [],
+        "@wpi_bazel_rules//toolchains/conditions:raspbian": [],
     })
 
 def _get_default_linker_opts():
@@ -61,6 +66,11 @@ def _get_default_linker_opts():
         "@bazel_tools//src/conditions:windows": WINDOWS_LINKER_ARGS,
         "@bazel_tools//src/conditions:linux_x86_64": LINUX_LINKER_ARGS,
         "@bazel_tools//src/conditions:darwin": MAC_LINKER_ARGS,
+
+        # Arguments handled by hermetic toolchain
+        "@wpi_bazel_rules//toolchains/conditions:roborio": [],
+        "@wpi_bazel_rules//toolchains/conditions:bionic": [],
+        "@wpi_bazel_rules//toolchains/conditions:raspbian": [],
     })
 
 def _get_default_features():
@@ -121,6 +131,9 @@ def convert_to_shared_libs(wpideps):
 def convert_to_final_libs(wpideps):
     return [__make_shared_import_final_name(x) for x in wpideps]
 
+def convert_to_final_static_libs(wpideps):
+    return [__make_static_lib_name(x) for x in wpideps]
+
 # https://github.com/bazelbuild/bazel/blob/26c7e10739907332e70d31e68d2bd2ff2e9a84fb/examples/windows/dll
 def wpilib_cc_shared_library(
         name,
@@ -130,6 +143,7 @@ def wpilib_cc_shared_library(
         raw_deps = [],
         wpi_shared_deps = [],
         copts = [],
+        tags = [],
         linkopts = [],
         win_def_file = None,
         strip_include_prefix = None,
@@ -157,14 +171,16 @@ def wpilib_cc_shared_library(
         linkopts = linkopts + _get_default_linker_opts(),
         features = _get_default_features(),
         strip_include_prefix = strip_include_prefix,
+        tags = tags,
     )
 
-    # Build the shared library
+    # Build the static library
     cc_library(
         name = static_lib_name,
         srcs = srcs,
         deps = deps + [headers_name],
         copts = copts + _get_default_cxx_opts(),
+        tags = tags,
         linkopts = linkopts + _get_default_linker_opts(),
         features = _get_default_features(),
         visibility = visibility,
@@ -180,6 +196,7 @@ def wpilib_cc_shared_library(
         name = shared_lib_name,
         srcs = srcs,
         deps = deps + [headers_name],
+        tags = tags,
         copts = copts + _get_default_cxx_opts(),
         linkopts = linkopts + _get_default_linker_opts(),
         features = features + _get_default_features(),
@@ -193,14 +210,19 @@ def wpilib_cc_shared_library(
         name = import_lib_name,
         srcs = [":" + shared_lib_name],
         output_group = "interface_library",
+        tags = tags,
     )
 
     # Because we cannot directly depend on cc_binary from other cc rules in deps attribute,
     # we use cc_import as a bridge to depend on the dll.
     cc_import(
         name = import_target_name,
+        tags = tags,
         interface_library = select({
             "@bazel_tools//src/conditions:windows": ":" + import_lib_name,
+            "@wpi_bazel_rules//toolchains/conditions:raspbian": None,
+            "@wpi_bazel_rules//toolchains/conditions:bionic": None,
+            "@wpi_bazel_rules//toolchains/conditions:roborio": None,
             "//conditions:default": None,
         }),
         shared_library = ":" + shared_lib_name,
@@ -214,6 +236,7 @@ def wpilib_cc_shared_library(
         copts = copts + _get_default_cxx_opts(),
         linkopts = linkopts + _get_default_linker_opts(),
         features = _get_default_features(),
+        tags = tags,
         deps = deps + [
             ":" + import_target_name,
         ],
@@ -246,6 +269,7 @@ def wpilib_cc_test(
         name,
         copts = [],
         deps = [],
+        tags = [],
         raw_deps = [],
         wpi_shared_deps = [],
         linkopts = [],
@@ -261,6 +285,7 @@ def wpilib_cc_test(
         linkopts = linkopts + _get_default_linker_opts(),
         features = _get_default_features(),
         deps = deps + ["@gtest//:gtest"],
+        tags = tags + ["no-roborio", "no-bionic", "no-raspbian"],
         **kwargs
     )
 

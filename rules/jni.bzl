@@ -55,7 +55,7 @@ def wpilib_jni_library(
         name = name,
         srcs = srcs,
         hdrs = hdrs + [":" + f for f in jni_files],
-        raw_deps = raw_deps + ["@bazel_tools//tools/jdk:jni"],
+        raw_deps = raw_deps + ["@wpi_bazel_rules//toolchains/jni"],
         wpi_shared_deps = wpi_maybe_shared_deps,
         strip_include_prefix = strip_include_prefix,
         includes = [name + "_jniheaders/"],

@@ -21,6 +21,7 @@ def __prepare_jni_deps(name, jni_deps, win_destination_suffix):
             "@bazel_tools//src/conditions:linux_x86_64": "extracted_native",
             "@bazel_tools//src/conditions:darwin": "extracted_native",
         }),
+        tags = ["no-roborio", "no-bionic", "no-raspbian"],
     )
 
     full_extracted_native_dir = native.package_name() + "/extracted_native"
@@ -105,6 +106,7 @@ def wpilib_junit5_test(
         use_testrunner = False,
         jvm_flags = jvm_flags,
         env = select(env_dict) if env_dict else None,
+        tags = ["no-roborio", "no-bionic", "no-raspbian"],
         **kwargs
     )
 
