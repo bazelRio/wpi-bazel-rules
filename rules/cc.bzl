@@ -273,11 +273,15 @@ def wpilib_cc_test(
         raw_deps = [],
         wpi_shared_deps = [],
         linkopts = [],
+        link_wpi_shared_deps_statically = True,
         **kwargs):
     if deps:
         fail("No more")
 
-    deps = convert_to_final_libs(wpi_shared_deps) + raw_deps
+    if link_wpi_shared_deps_statically:
+        deps = convert_to_final_static_libs(wpi_shared_deps) + raw_deps
+    else:
+        deps = convert_to_final_libs(wpi_shared_deps) + raw_deps
 
     cc_test(
         name = name,

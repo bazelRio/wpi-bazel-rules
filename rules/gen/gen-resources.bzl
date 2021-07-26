@@ -4,13 +4,20 @@ def _generate_resource_impl(ctx):
     prefix = ctx.attr.prefix
     namespace = ctx.attr.namespace
 
+    if ctx.attr.use_stringview:
+      include_file = "<wpi/StringRef.h>"
+      return_type = "wpi::StringRef"
+    else:
+      include_file = "<string_view>"
+      return_type = "std::string_view"
+
     for input_file in ctx.attr.resource_files:
         input_file = input_file[input_file.rfind("/") + 1:]
         func_name = "GetResource_" + input_file.replace("-", "_").replace(".", "_")
 
         out = ctx.actions.declare_file(input_file + ".cpp")
         content = """#include <stddef.h>
-#include <wpi/StringRef.h>
+#include ${include_file}
 extern "C" {
 static const unsigned char contents[] = { ${data} };
 const unsigned char* ${prefix}_${func_name}(size_t* len) {
@@ -19,12 +26,12 @@ const unsigned char* ${prefix}_${func_name}(size_t* len) {
 }
 }
 namespace ${namespace} {
-wpi::StringRef ${func_name}() {
-  return wpi::StringRef(reinterpret_cast<const char*>(contents), ${data_size});
+${return_type} ${func_name}() {
+  return ${return_type}(reinterpret_cast<const char*>(contents), ${data_size});
 }
 }
 
-      """.replace("${data}", "0x00").replace("${data_size}", "1").replace("${func_name}", func_name).replace("${prefix}", prefix).replace("${namespace}", namespace)
+      """.replace("${data}", "0x00").replace("${data_size}", "1").replace("${func_name}", func_name).replace("${prefix}", prefix).replace("${namespace}", namespace).replace("${include_file}", include_file).replace("${return_type}", return_type)
 
         ctx.actions.write(
             output = out,

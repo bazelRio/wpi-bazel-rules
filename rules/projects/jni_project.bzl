@@ -13,6 +13,7 @@ def jni_project(
         java_additional_srcs = [],
         java_deps = [],
         java_raw_jni_deps = [],
+        java_shared_jni_deps = [],
         java_additional_java_jni_files = [],
         java_dev_main_class = None,
         java_has_test = True):
@@ -61,7 +62,7 @@ def jni_project(
             wpi_shared_deps = [
                 ":" + name,
                 ":" + jni_name,
-            ] + cc_shared_deps,
+            ] + cc_shared_deps + java_shared_jni_deps,
         )
 
     default_wpilib_cc_dev_main(
