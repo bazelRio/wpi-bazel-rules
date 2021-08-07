@@ -5,11 +5,11 @@ def _generate_resource_impl(ctx):
     namespace = ctx.attr.namespace
 
     if ctx.attr.use_stringview:
-      include_file = "<wpi/StringRef.h>"
-      return_type = "wpi::StringRef"
-    else:
       include_file = "<string_view>"
       return_type = "std::string_view"
+    else:
+      include_file = "<wpi/StringRef.h>"
+      return_type = "wpi::StringRef"
 
     for input_file in ctx.attr.resource_files:
         input_file = input_file[input_file.rfind("/") + 1:]
@@ -48,5 +48,6 @@ generate_resources = rule(
         "resource_files": attr.string_list(mandatory = True),
         "prefix": attr.string(mandatory = True),
         "namespace": attr.string(mandatory = True),
+        "use_stringview": attr.bool(default = True)
     },
 )

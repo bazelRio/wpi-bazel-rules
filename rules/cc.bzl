@@ -155,7 +155,8 @@ def wpilib_cc_shared_library(
     if win_def_file:
         fail("Nope")
 
-    deps = raw_deps + convert_to_final_libs(wpi_shared_deps)
+    static_deps = raw_deps + convert_to_final_static_libs(wpi_shared_deps)
+    final_deps = raw_deps + convert_to_final_libs(wpi_shared_deps)
 
     static_lib_name = __make_static_lib_name(name)
     shared_lib_name = __make_shared_lib_name(name)
@@ -174,11 +175,17 @@ def wpilib_cc_shared_library(
         tags = tags,
     )
 
+    build_with_static_deps = False
+    if build_with_static_deps:
+        library_deps = static_deps
+    else:
+        library_deps = final_deps
+
     # Build the static library
     cc_library(
         name = static_lib_name,
         srcs = srcs,
-        deps = deps + [headers_name],
+        deps = library_deps + [headers_name],
         copts = copts + _get_default_cxx_opts(),
         tags = tags,
         linkopts = linkopts + _get_default_linker_opts(),
@@ -195,7 +202,7 @@ def wpilib_cc_shared_library(
     cc_binary(
         name = shared_lib_name,
         srcs = srcs,
-        deps = deps + [headers_name],
+        deps = final_deps + [headers_name],
         tags = tags,
         copts = copts + _get_default_cxx_opts(),
         linkopts = linkopts + _get_default_linker_opts(),
@@ -237,7 +244,7 @@ def wpilib_cc_shared_library(
         linkopts = linkopts + _get_default_linker_opts(),
         features = _get_default_features(),
         tags = tags,
-        deps = deps + [
+        deps = final_deps + [
             ":" + import_target_name,
         ],
         strip_include_prefix = strip_include_prefix,
