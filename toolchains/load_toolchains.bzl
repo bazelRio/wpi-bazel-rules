@@ -89,15 +89,15 @@ configure_cross_compiler = repository_rule(
     },
 )
 
-def load_toolchains():
+def load_toolchains(roborio_year):
     configure_cross_compiler(
         name = "local_roborio",
         compiler = "roborio",
-        bin_subfolder = "frc2021/roborio/bin",
-        bin_prefix = "arm-frc2021-linux-gnueabi-",
-        sysroot_subfolder = "frc2021/roborio/arm-frc2021-linux-gnueabi",
+        bin_subfolder = "frc{year}/roborio/bin".format(year = roborio_year),
+        bin_prefix = "arm-frc{year}-linux-gnueabi-".format(year = roborio_year),
+        sysroot_subfolder = "frc{year}/roborio/arm-frc{year}-linux-gnueabi".format(year = roborio_year),
         cxx_version = "7.3.0",
-        sysroot_include_folder = "arm-frc2021-linux-gnueabi",
+        sysroot_include_folder = "arm-frc{year}-linux-gnueabi".format(year = roborio_year),
     )
 
     configure_cross_compiler(
