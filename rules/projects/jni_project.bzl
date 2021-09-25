@@ -9,6 +9,7 @@ def jni_project(
         cc_shared_deps = [],
         cc_includes = [],
         cc_test_deps = [],
+        export_cc_symbols = True,
         export_jni_symbols = True,
         java_additional_srcs = [],
         java_deps = [],
@@ -25,6 +26,8 @@ def jni_project(
         raw_deps = cc_raw_deps,
         wpi_shared_deps = cc_shared_deps,
         includes = cc_includes,
+        export_symbols = export_cc_symbols,
+        defines = ["WPILIB_EXPORTS"],
         visibility = ["//visibility:public"],
     )
 
